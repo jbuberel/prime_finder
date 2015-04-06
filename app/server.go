@@ -74,8 +74,8 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Error: Page not found\n")
 }
 
-func main() {
+func init() {
     http.HandleFunc("/prime", primeHandler)
     http.HandleFunc("/", defaultHandler)
-    http.ListenAndServe(":8080", nil)
+    //shttp.ListenAndServe(":8080", nil)
 }
