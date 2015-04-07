@@ -1,4 +1,3 @@
-application: prime-finder
 version: 1
 runtime: go
 vm: true
