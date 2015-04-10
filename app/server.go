@@ -71,8 +71,7 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "text/plain")
-	w.WriteHeader(404)
-	fmt.Fprintf(w, "Error: Page not found\n")
+	fmt.Fprintf(w, "Try a limit instead.\n")
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,10 +84,12 @@ func main() {
     http.HandleFunc("/prime", primeHandler)
     http.HandleFunc("/_ah/health", healthHandler)
     http.HandleFunc("/", defaultHandler)
+
     port := os.Getenv("PORT")
     if port == "" {
-	port = "8080"
+      port = "8080"
     }
     log.Printf("Listening on port %v\n", port)
     http.ListenAndServe(":" + port, nil)
+
 }
