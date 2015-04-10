@@ -7,6 +7,7 @@ import (
     "encoding/json"
     "strconv"
     "log"
+    "os"
     "github.com/jbuberel/prime_finder/generator/eratosthenes"
     "github.com/jbuberel/prime_finder/generator/sundaram"
 )
@@ -73,7 +74,22 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Try a limit instead.\n")
 }
 
-func init() {
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-type", "text/plain")
+	w.WriteHeader(200)
+	fmt.Fprintf(w, "OK\n")
+}
+
+func main() {
     http.HandleFunc("/prime", primeHandler)
+    http.HandleFunc("/_ah/health", healthHandler)
     http.HandleFunc("/", defaultHandler)
+
+    port := os.Getenv("PORT")
+    if port == "" {
+      port = "8080"
+    }
+    log.Printf("Listening on port %v\n", port)
+    http.ListenAndServe(":" + port, nil)
+
 }
