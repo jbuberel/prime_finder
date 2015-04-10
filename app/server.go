@@ -70,12 +70,10 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "text/plain")
-	w.WriteHeader(404)
-	fmt.Fprintf(w, "Error: Page not found\n")
+	fmt.Fprintf(w, "Try a limit instead.\n")
 }
 
 func init() {
     http.HandleFunc("/prime", primeHandler)
     http.HandleFunc("/", defaultHandler)
-    //shttp.ListenAndServe(":8080", nil)
 }
