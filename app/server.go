@@ -70,17 +70,6 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 	    fmt.Fprintf(w, string(json_output))
 	}
-  db, err := sql.Open("mysql", "service:abc123@tcp([2001:4860:4864:1:3907:3b3d:5490:9e64]:3306)/primes_schema")
-  if err != nil {
-    log.Printf("Error connecting: %v", err)
-    w.Header().Add("Content-type", "text/plain")
-    w.WriteHeader(500)
-    fmt.Fprintf(w, "Error connecting to database.\n")
-    return
-  } else {
-    log.Printf("Successfully connected to mysql database\n")
-  }
-  defer db.Close()
   _, err = db.Exec("INSERT INTO primes (limit_val, prime) VALUES (?,?)", results[0].Limit, results[0].Prime)
   if err != nil {
           log.Fatal(err)
@@ -94,23 +83,22 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-type", "text/plain")
-	w.WriteHeader(200)
-	fmt.Fprintf(w, "OK\n")
+
+  err := db.Ping()
+  if err != nil {
+    w.Header().Add("Content-type", "text/plain")
+  	w.WriteHeader(502)
+  	fmt.Fprintf(w, "No DB Connection\n")
+
+  } else {
+    w.Header().Add("Content-type", "text/plain")
+  	w.WriteHeader(200)
+  	fmt.Fprintf(w, "OK\n")
+
+  }
 }
 
 func resultsHandler(w http.ResponseWriter, r *http.Request) {
-  db, err := sql.Open("mysql", "service:abc123@tcp([2001:4860:4864:1:3907:3b3d:5490:9e64]:3306)/primes_schema")
-  if err != nil {
-    log.Printf("Error connecting: %v", err)
-    w.Header().Add("Content-type", "text/plain")
-    w.WriteHeader(500)
-    fmt.Fprintf(w, "Error connecting to database.\n")
-    return
-  } else {
-    log.Printf("Successfully connected to mysql database\n")
-  }
-  defer db.Close()
 
   w.Header().Add("Content-type", "text/plain")
   w.WriteHeader(200)
@@ -136,11 +124,25 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+var db  *sql.DB
+
+func init() {
+  var err error
+  db, err = sql.Open("mysql", "service:abc123@tcp([2001:4860:4864:1:3907:3b3d:5490:9e64]:3306)/primes_schema")
+  if err != nil {
+    log.Printf("Error connecting: %v", err)
+  } else {
+    db.Ping()
+    log.Printf("Successfully connected to mysql database\n")
+  }
+
+}
+
 func main() {
     http.HandleFunc("/prime", primeHandler)
     http.HandleFunc("/_ah/health", healthHandler)
-    http.HandleFunc("/", defaultHandler)
     http.HandleFunc("/results", resultsHandler)
+    http.HandleFunc("/", defaultHandler)
 
     port := os.Getenv("PORT")
     if port == "" {
