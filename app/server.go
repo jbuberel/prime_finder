@@ -88,7 +88,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 
-
+  fmt.Fprintf(w, "Database address: %v\n", mysql)
   if err := db.Ping(); err != nil {
     w.Header().Add("Content-type", "text/plain")
   	w.WriteHeader(200)
@@ -133,6 +133,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var db  *sql.DB
+var mysql string
 
 func init() {
   defer func() {
@@ -141,7 +142,16 @@ func init() {
         }
     }()
   var err error
-  db, err = sql.Open("mysql", "service:abc123@tcp([2001:4860:4864:1:3907:3b3d:5490:9e64]:3306)/primes_schema")
+
+
+  mysql = os.Getenv("MYSQL")
+  if mysql == "" {
+    mysql = "[2001:4860:4864:1:3907:3b3d:5490:9e64]"
+  }
+
+  log.Printf("Connecting to database address: %v", mysql)
+
+  db, err = sql.Open("mysql", "service:abc123@tcp("+ mysql +":3306)/primes_schema")
   if err != nil {
     log.Printf("Error connecting: %v", err)
   } else {
