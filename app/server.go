@@ -70,6 +70,10 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 	    fmt.Fprintf(w, string(json_output))
 	}
+
+  if err := db.Ping(); err != nil {
+    return
+  }
   _, err = db.Exec("INSERT INTO primes (limit_val, prime) VALUES (?,?)", results[0].Limit, results[0].Prime)
   if err != nil {
           log.Fatal(err)
@@ -84,11 +88,11 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 
-  err := db.Ping()
-  if err != nil {
+
+  if err := db.Ping(); err != nil {
     w.Header().Add("Content-type", "text/plain")
-  	w.WriteHeader(502)
-  	fmt.Fprintf(w, "No DB Connection\n")
+  	w.WriteHeader(200)
+  	fmt.Fprintf(w, "OK, but no DB Connection\n")
 
   } else {
     w.Header().Add("Content-type", "text/plain")
@@ -103,6 +107,10 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
   w.Header().Add("Content-type", "text/plain")
   w.WriteHeader(200)
 
+  if err := db.Ping(); err != nil {
+    fmt.Fprintf(w,"No DB connection\n")
+    return
+  }
   rows, err := db.Query("SELECT limit_val, prime FROM primes")
   if err != nil {
           log.Fatal(err)
@@ -137,8 +145,12 @@ func init() {
   if err != nil {
     log.Printf("Error connecting: %v", err)
   } else {
-    db.Ping()
-    log.Printf("Successfully connected to mysql database\n")
+    err = db.Ping()
+    if err != nil {
+      log.Printf("Unable to connect to database: %v\n", err)
+    } else {
+      log.Printf("Successfully connected to mysql database\n")
+    }
   }
 
 }
