@@ -127,6 +127,11 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 var db  *sql.DB
 
 func init() {
+  defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Recovered in f", r)
+        }
+    }()
   var err error
   db, err = sql.Open("mysql", "service:abc123@tcp([2001:4860:4864:1:3907:3b3d:5490:9e64]:3306)/primes_schema")
   if err != nil {
