@@ -139,6 +139,11 @@ func init() {
 }
 
 func main() {
+  defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Recovered in f", r)
+        }
+    }()
     http.HandleFunc("/prime", primeHandler)
     http.HandleFunc("/_ah/health", healthHandler)
     http.HandleFunc("/results", resultsHandler)
