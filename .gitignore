@@ -51,3 +51,11 @@ Temporary Items
 .idea/modules.xml
 app/server
 app/.dockercfg
+
+app/.gopmfile
+
+.vendor/src/github.com/jbuberel/prime_finder
+
+app/.vendor/src/github.com/jbuberel/prime_finder
+
+app/output

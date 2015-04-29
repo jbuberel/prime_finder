@@ -7,6 +7,7 @@ import (
     "encoding/json"
     "strconv"
     "log"
+    "log/syslog"
     "os"
 
     "database/sql"
@@ -17,12 +18,11 @@ import (
 )
 
 type PrimeGeneratorResult struct {
-  Sieve string `json:"sieve"`
-	Prime int64	 `json:"prime"`
-	Limit int64	 `json:"limit"`
-	Duration float64	`json:"compute_time_sec"`
+	Sieve    string  `json:"sieve"`
+	Prime    int64   `json:"prime"`
+	Limit    int64   `json:"limit"`
+	Duration float64 `json:"compute_time_sec"`
 }
-
 
 // Response to all URLs beginning with '/prime'
 // Expects a single query parameter, 'limit' with an integer value
@@ -32,11 +32,11 @@ type PrimeGeneratorResult struct {
 func primeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "text/json")
 
- 	log.Printf("URL: %v\n", r.URL)
-	m,_  := url.ParseQuery(r.URL.RawQuery)
+	log.Printf("URL: %v\n", r.URL)
+	m, _ := url.ParseQuery(r.URL.RawQuery)
 	log.Printf("Query string map: %v\n", m)
 	limit, err := strconv.ParseInt(m["limit"][0], 10, 64)
-    if  err != nil {
+	if err != nil {
 		log.Printf("Error extracting string from limit parameter\n", err)
 		w.WriteHeader(500)
 		fmt.Fprintf(w, "Uable to parse value from limit parameter\n")
@@ -45,30 +45,30 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Using limit value: [%v]\n", limit)
 	}
 
-  results := make([]PrimeGeneratorResult,0)
-  prime, duration := sundaram.GetPrime(limit)
-  results = append(results, PrimeGeneratorResult {
-    Sieve: "sundaram",
-		Prime: prime,
-		Limit: limit,
+	results := make([]PrimeGeneratorResult, 0)
+	prime, duration := sundaram.GetPrime(limit)
+	results = append(results, PrimeGeneratorResult{
+		Sieve:    "sundaram",
+		Prime:    prime,
+		Limit:    limit,
 		Duration: duration,
 	})
 
 	prime, duration = eratosthenes.GetPrime(limit)
-	results= append(results, PrimeGeneratorResult {
-    Sieve: "eratosthenes",
-		Prime: prime,
-		Limit: limit,
+	results = append(results, PrimeGeneratorResult{
+		Sieve:    "eratosthenes",
+		Prime:    prime,
+		Limit:    limit,
 		Duration: duration,
 	})
-  json_output, err := json.Marshal(results)
+	json_output, err := json.Marshal(results)
 	if err != nil {
 		log.Printf("Error encoding json data!\n", err)
 		w.WriteHeader(500)
 		fmt.Fprintf(w, "Uable render JSON output.\n")
 		return
 	} else {
-	    fmt.Fprintf(w, string(json_output))
+		fmt.Fprintf(w, string(json_output))
 	}
 
   if err := db.Ping(); err != nil {
@@ -163,6 +163,11 @@ func init() {
     }
   }
 
+  sysLogger, err := syslog.New(syslog.LOG_NOTICE, "prime_finder")
+  if err == nil {
+    log.SetOutput(sysLogger)
+  }
+
 }
 
 func main() {
@@ -182,5 +187,4 @@ func main() {
     }
     log.Printf("Listening on port %v\n", port)
     http.ListenAndServe(":" + port, nil)
-
 }
