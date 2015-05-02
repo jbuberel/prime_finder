@@ -53,6 +53,7 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 		Limit:    limit,
 		Duration: duration,
 	})
+	}) 
 
 	prime, duration = eratosthenes.GetPrime(limit)
 	results = append(results, PrimeGeneratorResult{
