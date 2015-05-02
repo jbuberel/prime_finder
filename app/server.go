@@ -52,7 +52,6 @@ func primeHandler(w http.ResponseWriter, r *http.Request) {
 		Prime:    prime,
 		Limit:    limit,
 		Duration: duration,
-	})
 	}) 
 
 	prime, duration = eratosthenes.GetPrime(limit)
