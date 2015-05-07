@@ -193,7 +193,12 @@ func init() {
   }
 
 
-  redisConn, err = redis.Dial("tcp", ":6379")
+  redisHost := os.Getenv("REDIS")
+  if redisHost == "" {
+    redisHost = "127.0.0.1"
+  }
+  log.Printf("Redis Host: %v\n", redisHost)
+  redisConn, err = redis.Dial("tcp", redisHost + ":6379")
   if err != nil {
     log.Println(err)
   }
